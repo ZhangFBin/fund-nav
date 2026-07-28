@@ -22,20 +22,20 @@ jobs:
           python-version: '3.11'
 
       - name: install deps
-        run: pip install --quiet akshare pandas requests
+        run: pip install --quiet akshare pandas requests numpy
 
-      - name: run update
-        run: python update_nav.py
+      - name: run update (数据库中枢 + 模型重训)
+        run: python update_all.py
 
       - name: commit & push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data.js
+          git add data.js fund.db
           if git diff --staged --quiet; then
-            echo "净值无变化，跳过提交"
+            echo "数据无变化，跳过提交"
           else
-            git commit -m "auto: 每日净值更新 $(date -u +%Y-%m-%d)"
+            git commit -m "auto: 每日净值更新+模型重训 $(date -u +%Y-%m-%d)"
             git push
             echo "已推送，Pages 将自动重新部署"
           fi
