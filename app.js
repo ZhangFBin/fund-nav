@@ -229,6 +229,33 @@
     });
   };
 
+  /* ---------- 访问量统计（CounterAPI，免费免注册） ---------- */
+  (function trackVisit() {
+    var BASE = 'https://api.counterapi.dev/v1/jysld-fund-nav/total';
+    var elT = document.getElementById('visit-total');
+    var elD = document.getElementById('visit-today');
+    function showTotal(n) { if (elT) elT.textContent = '累计访问 ' + n + ' 次'; }
+    function showToday(n) { if (elD && n > 0) elD.textContent = '· 今日 ' + n + ' 次'; }
+    function fetchList() {
+      fetch(BASE + '/list?group_by=day&order_by=desc')
+        .then(function (r) { return r.json(); })
+        .then(function (arr) { if (arr && arr[0]) showToday(arr[0].count || 0); })
+        .catch(function () {});
+    }
+    if (sessionStorage.getItem('jysld_visited')) {
+      // 同一会话不重复计数，仅展示
+      fetch(BASE + '/').then(function (r) { return r.json(); }).then(function (d) { showTotal(d.count); }).catch(function () { showTotal('--'); });
+      fetchList();
+      return;
+    }
+    sessionStorage.setItem('jysld_visited', '1');
+    // 首次访问：+1
+    fetch(BASE + '/up')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { showTotal(d.count); fetchList(); })
+      .catch(function () { showTotal('--'); fetchList(); });
+  })();
+
   /* ---------- 路由 ---------- */
   function route() {
     var h = location.hash.replace(/^#\/?/, '');
